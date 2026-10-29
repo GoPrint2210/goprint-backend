@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GoPrint Admin Dashboard</title>
+<style>
+:root {
+  --navy:#142b4e;
+  --navy2:#1c3763;
+  --blue:#3783e8;
+  --blue-light:#e8f2ff;
+  --ink:#182b49;
+  --muted:#718096;
+  --line:#dce7f3;
+  --page:#f3f7fc;
+  --green:#d9f6e9;
+  --green-text:#137449;
+  --amber:#fff0cf;
+  --amber-text:#9a6100;
+  --purple:#eee8ff;
+  --purple-text:#6544bd;
+  --red:#ffe5e5;
+  --red-text:#b42323;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font:14px Arial,sans-serif;line-height:1.5}
+button,input,select{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #bfdbfe;outline-offset:2px}
+button:disabled{opacity:.6;cursor:wait}
+.hidden{display:none!important}
+.muted{color:var(--muted)}
+.error{color:var(--red-text)}
+.success{color:var(--green-text)}
+button{border:1px solid #cfe0f5;border-radius:7px;padding:8px 12px;background:#edf5ff;color:#245b9f;font-weight:700}
+button:hover{background:#dcecff}
+.btn-blue{background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe}
+.btn-green{background:#dcfce7;color:#166534;border-color:#bbf7d0}
+.btn-orange{background:#fff0d5;color:#975a00;border-color:#ffe0a3}
+.btn-red{background:#fee2e2;color:#b91c1c;border-color:#fecaca}
+.btn-dark{background:var(--navy);color:white;border-color:var(--navy)}
+.btn-dark:hover{background:var(--navy2)}
+input,select{padding:10px;border:1px solid #d2dfed;border-radius:7px;background:white;color:var(--ink);max-width:100%}
+label{display:block;font-size:12px;font-weight:700;margin:12px 0 5px}
+.header{height:60px;background:white;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 22px;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;font-size:19px;font-weight:800;color:var(--navy)}
+.brand-icon{background:#e5efff;border-radius:9px;padding:7px;font-size:21px}
+.portal-label{font-size:12px;color:var(--muted)}
+.app{display:grid;grid-template-columns:205px minmax(0,1fr);min-height:calc(100vh - 60px)}
+.sidebar{background:linear-gradient(180deg,#142b4e,#19365d);padding:20px 12px;color:white}
+.side-brand{font-size:19px;font-weight:800;padding:5px 10px 23px}
+.nav-item{display:flex;align-items:center;gap:10px;width:100%;padding:11px 12px;margin-bottom:4px;border:0;background:transparent;color:#d6e3f5;text-align:left;border-radius:7px;font-weight:600}
+.nav-item:hover,.nav-item.active{background:#315b91;color:white}
+.main{min-width:0;padding:22px}
+.page-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.page-heading h1{font-size:24px;margin:0;color:var(--navy)}
+.page-heading p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.stat{display:flex;align-items:center;gap:12px;background:white;border:1px solid #e1ebf7;border-radius:10px;padding:15px;min-width:0}
+.stat-icon{width:40px;height:40px;display:grid;place-items:center;border-radius:50%;font-size:19px;flex-shrink:0}
+.stat-icon.blue{background:#e0edff}.stat-icon.orange{background:#fff0d5}.stat-icon.purple{background:#eee8ff}.stat-icon.green{background:#d9f6e9}
+.stat-label{font-size:11px;color:var(--muted)}
+.stat strong{display:block;font-size:23px;color:var(--ink)}
+.stat[data-filter]{cursor:pointer}
+.stat.active{outline:2px solid #7eb5ff;background:#f0f7ff}
+.panel{background:white;border:1px solid #e0e9f4;border-radius:11px;margin-bottom:18px;overflow:hidden}
+.panel-head{padding:17px 18px 12px}
+.panel-head h2{margin:0;font-size:17px;color:var(--navy)}
+.panel-head p{margin:3px 0 0;font-size:12px;color:var(--muted)}
+.toolbar{display:flex;align-items:end;gap:10px;flex-wrap:wrap;padding:0 18px 15px}
+.search-field{flex:1;min-width:230px}
+.search-field input{width:100%}
+.table-wrap{overflow-x:auto;border-top:1px solid var(--line)}
+table{width:100%;border-collapse:collapse}
+.orders-table{min-width:1000px}
+th,td{padding:12px 10px;text-align:left;vertical-align:middle;border-bottom:1px solid #e8eff7;overflow-wrap:anywhere}
+th{background:#f0f6fd;color:#526987;font-size:11px;white-space:nowrap}
+td{font-size:12px}
+tbody tr:nth-child(even){background:#fbfdff}
+tbody tr:hover{background:#f2f7ff}
+.order-id{font-weight:800;color:var(--navy)}
+.customer-name{font-weight:700}
+.document-count,.badge{display:inline-block;border-radius:7px;padding:5px 8px;font-size:11px;font-weight:800;white-space:nowrap}
+.document-count{background:#e3f0ff;color:#2563a8}
+.badge.pending{background:var(--amber);color:var(--amber-text)}
+.badge.advance_paid{background:var(--amber);color:var(--amber-text)}
+.badge.paid{background:var(--green);color:var(--green-text)}
+.badge.confirmed{background:var(--blue-light);color:#225db4}
+.badge.printing{background:var(--purple);color:var(--purple-text)}
+.badge.ready_for_collection{background:#ffead7;color:#a54c00}
+.badge.completed{background:var(--green);color:var(--green-text)}
+.badge.cancelled{background:var(--red);color:var(--red-text)}
+.badge.unknown{background:#e9eef5;color:#526174}
+.empty{text-align:center;padding:30px;color:var(--muted)}
+.message{font-size:12px;margin:10px 0;overflow-wrap:anywhere}
+.login-card{max-width:420px;margin:50px auto;padding:25px}
+.login-card h2{margin-top:0;color:var(--navy)}
+.login-card input{width:100%}
+.login-button{width:100%;margin-top:18px}
+.footer{text-align:center;color:var(--muted);font-size:11px;padding:18px}
+.detail-top{display:flex;justify-content:space-between;align-items:start;gap:12px;flex-wrap:wrap;margin-bottom:17px}
+.detail-top h2{margin:0;font-size:22px;color:var(--navy)}
+.detail-top p{margin:4px 0 0;color:var(--muted);font-size:12px}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px}
+.metric{background:#f4f8fd;border:1px solid #e2ebf5;border-radius:9px;padding:12px;min-width:0}
+.metric span{display:block;color:var(--muted);font-size:11px}
+.metric strong{display:block;font-size:18px;margin-top:4px;overflow-wrap:anywhere}
+.section-title{font-size:16px;font-weight:800;color:var(--navy);margin:20px 0 10px}
+.doc-grid{display:grid;grid-template-columns:1fr;gap:12px}
+.doc-card{border:1px solid #dce8f6;border-radius:10px;background:white;padding:15px}
+.doc-head{display:flex;align-items:start;gap:12px}
+.pdf-icon{width:43px;height:49px;display:grid;place-items:center;flex-shrink:0;border-radius:8px;background:#e5efff;color:#2c72c9;font-weight:800}
+.doc-main{flex:1;min-width:0}
+.doc-name{font-size:14px;font-weight:800;overflow-wrap:anywhere;color:var(--navy)}
+.doc-sub{font-size:12px;color:var(--muted);margin-top:3px}
+.doc-price{font-weight:800;white-space:nowrap}
+.doc-settings{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:15px;padding-top:12px;border-top:1px solid #e7eef7}
+.setting-label{font-size:10px;color:var(--muted);margin-bottom:3px}
+.setting-value{font-size:12px;font-weight:700;overflow-wrap:anywhere}
+.doc-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.detail-field{padding:10px 12px;background:#f6f9fd;border-radius:8px;min-width:0}
+.detail-field span{display:block;font-size:11px;color:var(--muted)}
+.detail-field strong{display:block;margin-top:3px;overflow-wrap:anywhere}
+.history-table{min-width:520px}
+.history-table th{background:#f0f6fd}
+.login-wrap{max-width:450px;margin:auto}
+@media(min-width:1150px){.doc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:850px){
+ .app{grid-template-columns:1fr}
+ .sidebar{padding:8px;display:flex;gap:5px;overflow-x:auto}
+ .side-brand{display:none}
+ .nav-item{width:auto;white-space:nowrap;margin:0;padding:10px}
+ .main{padding:15px}
+ .stats,.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .doc-settings{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:500px){
+ .header{padding:0 12px}
+ .main{padding:10px}
+ .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .stat{padding:10px;gap:7px}
+ .stat-icon{width:32px;height:32px}
+ .stat strong{font-size:20px}
+ .metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .detail-grid{grid-template-columns:1fr}
+ .doc-head{flex-wrap:wrap}
+ .doc-price{margin-left:auto}
+ .toolbar{padding:0 12px 12px}
+ .search-field{min-width:100%}
+}
+@media print{
+ .sidebar,.header,.no-print,.actions,.doc-actions{display:none!important}
+ .app{display:block}
+ .main{padding:0}
+ body{background:white}
+ .panel,.doc-card{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="brand"><span class="brand-icon">🖨️</span><span>GoPrint</span></div>
+  <div class="portal-label">Admin Portal　● <strong>Admin</strong></div>
+</header>
+
+<div class="app">
+<aside class="sidebar">
+  <div class="side-brand">🖨️ GoPrint</div>
+  <button class="nav-item active" type="button" id="navDashboard">⌂　Dashboard</button>
+  <button class="nav-item" type="button" id="navOrders">▤　Orders</button>
+  <button class="nav-item" type="button" id="navSettings">⚙　Print Settings</button>
+  <button class="nav-item" type="button" id="navUsers">♙　Users</button>
+  <button class="nav-item" type="button" id="navReports">▥　Reports</button>
+  <button class="nav-item" type="button" id="navLogout">⇥　Logout</button>
+</aside>
+
+<main class="main">
+<section id="loginSection" class="panel login-card">
+  <h2>🔐 Admin Login</h2>
+  <p class="muted">Sign in with your administrator credentials.</p>
+  <form id="loginForm">
+    <label for="adminId">Admin ID</label>
+    <input id="adminId" autocomplete="username" required>
+    <label for="password">Password</label>
+    <input id="password" type="password" autocomplete="current-password" required>
+    <button id="loginButton" class="login-button btn-blue" type="submit">Sign In</button>
+  </form>
+  <p id="loginMessage" class="message" role="status"></p>
+</section>
+
+<section id="dashboardSection" class="hidden">
+  <div class="page-heading">
+    <div><h1>Dashboard</h1><p>Manage and track all print orders</p></div>
+    <div class="actions no-print">
+      <button id="refreshButton">↻ Refresh</button>
+      <button id="logoutButton">Logout</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat active" data-filter="all" tabindex="0" role="button">
+      <div class="stat-icon blue">▣</div><div><div class="stat-label">Total Orders</div><strong id="statTotalOrders">0</strong></div>
+    </div>
+    <div class="stat" data-filter="pending" tabindex="0" role="button">
+      <div class="stat-icon orange">◷</div><div><div class="stat-label">Payments Pending</div><strong id="statPaymentsPending">0</strong></div>
+    </div>
+    <div class="stat" data-filter="printing" tabindex="0" role="button">
+      <div class="stat-icon purple">⚙</div><div><div class="stat-label">Printing</div><strong id="statPrinting">0</strong></div>
+    </div>
+    <div class="stat" data-filter="ready" tabindex="0" role="button">
+      <div class="stat-icon green">✓</div><div><div class="stat-label">Ready for Collection</div><strong id="statReadyCollection">0</strong></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><h2>Order Directory</h2><p>Each order shows the PDF count. Open View More for individual document details.</p></div>
+    <div class="toolbar no-print">
+      <div class="search-field"><label for="orderSearch">Search Customer Orders</label>
+        <input id="orderSearch" type="search" placeholder="Search customer, phone, order ID or PDF name..." autocomplete="off">
+      </div>
+      <button id="clearSearchButton">Clear Search</button>
+    </div>
+    <p id="dashboardMessage" class="message" style="padding:0 18px" role="status"></p>
+    <p id="searchResultMessage" class="muted" style="padding:0 18px;font-size:12px" role="status"></p>
+    <div class="table-wrap">
+      <table class="orders-table">
+        <thead><tr>
+          <th>Order ID</th><th>Customer</th><th>Date &amp; Time</th>
+          <th>Documents</th><th>Total Amount</th><th>Advance Paid</th>
+          <th>Balance</th><th>Payment</th><th>Status</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="ordersTable"><tr><td colspan="10" class="empty">Sign in to load orders.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="detailsSection" class="hidden">
+  <div class="page-heading">
+    <div><h1>View Order Details</h1><p>Every PDF and its individual print settings</p></div>
+    <div class="actions no-print">
+      <button id="backButton">← Back to Dashboard</button>
+      <button id="detailPrintButton">Print Details</button>
+    </div>
+  </div>
+  <div id="detailContent"></div>
+</section>
+</main>
+</div>
+<footer class="footer">GoPrint Admin Portal · Secure Order Management</footer>
+
+<script>
+"use strict";
+
+const API_URL = "http://192.168.29.164:3000";
+const $ = id => document.getElementById(id);
+
+let adminToken = sessionStorage.getItem("goprint_admin_token");
+let activeOrderFilter = "all";
+let currentOrders = [];
+let currentDetailOrder = null;
+let currentDetailReceipt = {};
+let searchTimeout = null;
+
+function showMessage(element, message, type = "") {
+  element.textContent = message;
+  element.className = "message " + type;
+}
+function money(paise) {
+  const n = Number(paise);
+  if (!Number.isFinite(n)) return "—";
+  return new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR"}).format(n/100);
+}
+function escapeHtml(value) {
+  return String(value ?? "—").replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[c]);
+}
+function formatValue(value) {
+  return value === null || value === undefined || value === "" ? "—" : String(value);
+}
+function authHeaders(extra = {}) {
+  return {...extra,Authorization:"Bearer "+adminToken};
+}
+async function readResponse(response) {
+  const text = await response.text();
+  try { return text ? JSON.parse(text) : {}; }
+  catch { return {error:"Invalid response from backend."}; }
+}
+function showLogin() {
+  adminToken = null;
+  sessionStorage.removeItem("goprint_admin_token");
+  $("loginSection").classList.remove("hidden");
+  $("dashboardSection").classList.add("hidden");
+  $("detailsSection").classList.add("hidden");
+}
+function showDashboard() {
+  $("loginSection").classList.add("hidden");
+  $("dashboardSection").classList.remove("hidden");
+  $("detailsSection").classList.add("hidden");
+}
+function showDetails() {
+  $("dashboardSection").classList.add("hidden");
+  $("detailsSection").classList.remove("hidden");
+}
+function getDocuments(order) {
+  if (Array.isArray(order.documents) && order.documents.length) return order.documents;
+  if (order.pdf_file_path) return [{
+    document_name:order.document_name || "Uploaded PDF",
+    page_count:order.page_count,copies:order.copies,color_mode:order.color_mode,
+    print_sides:order.print_sides,pages_per_sheet:order.pages_per_sheet,
+    orientation:order.orientation,colour_pages:order.colour_pages,
+    has_pdf:true,legacy:true
+  }];
+  return [];
+}
+function documentName(doc,index) {
+  return doc.document_name || doc.file_name || doc.original_name || ("Document "+(index+1));
+}
+function statusLabel(status) {
+  return ({
+    pending:"Pending",confirmed:"Confirmed",printing:"Printing",
+    ready_for_collection:"Ready for Collection",completed:"Completed",
+    cancelled:"Cancelled"
+  })[String(status||"pending").toLowerCase()] || formatValue(status);
+}
+function paymentLabel(status) {
+  return ({
+    paid:"Fully Paid",advance_paid:"Advance Paid",pending:"Payment Pending"
+  })[String(status||"pending").toLowerCase()] || formatValue(status);
+}
+function badge(value) {
+  const key = String(value||"unknown").toLowerCase();
+  return '<span class="badge '+escapeHtml(key)+'">'+escapeHtml(statusLabel(key))+'</span>';
+}
+function updateSearchCount(count,total,term) {
+  $("searchResultMessage").textContent = term
+    ? count+" matching order(s) shown from "+total+" total orders."
+    : count+" order(s).";
+}
+
+$("loginForm").addEventListener("submit",async event=>{
+  event.preventDefault();
+  $("loginButton").disabled=true;
+  showMessage($("loginMessage"),"Signing in...");
+  try {
+    const response=await fetch(API_URL+"/admin/login",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({adminId:$("adminId").value.trim(),password:$("password").value})
+    });
+    const data=await readResponse(response);
+    if(!response.ok) throw new Error(data.error||data.message||"Admin login failed.");
+    if(!data.token) throw new Error("Backend did not return an admin token.");
+    adminToken=data.token;
+    sessionStorage.setItem("goprint_admin_token",adminToken);
+    $("password").value="";
+    showDashboard();
+    await loadOrders();
+  } catch(error) {
+    showMessage($("loginMessage"),error.message||"Could not connect to backend.","error");
+  } finally { $("loginButton").disabled=false; }
+});
+
+async function loadOrders() {
+  if(!adminToken){showLogin();return;}
+  showMessage($("dashboardMessage"),"Loading orders...");
+  try {
+    const response=await fetch(API_URL+"/admin/orders",{headers:authHeaders()});
+    const data=await readResponse(response);
+    if(response.status===401||response.status===403){
+      showLogin();showMessage($("loginMessage"),"Your admin session expired. Please sign in again.","error");return;
+    }
+    if(!response.ok) throw new Error(data.error||data.message||"Could not load orders.");
+    const orders=Array.isArray(data)?data:data.orders;
+    if(!Array.isArray(orders)) throw new Error("Unexpected order response from backend.");
+    currentOrders=orders;
+    $("statTotalOrders").textContent=orders.length;
+    $("statPaymentsPending").textContent=orders.filter(o=>
+      String(o.payment_status||"pending").toLowerCase()!=="paid"&&Number(o.balance_amount_paise)>0
+    ).length;
+    $("statPrinting").textContent=orders.filter(o=>String(o.status||"").toLowerCase()==="printing").length;
+    $("statReadyCollection").textContent=orders.filter(o=>String(o.status||"").toLowerCase()==="ready_for_collection").length;
+    renderOrders();
+    showMessage($("dashboardMessage"),"Orders loaded successfully.","success");
+  } catch(error) {
+    showMessage($("dashboardMessage"),error.message||"Could not connect to backend.","error");
+    $("ordersTable").innerHTML='<tr><td colspan="10" class="empty">Could not load orders. Check the backend and try Refresh.</td></tr>';
+  }
+}
+
+function renderOrders() {
+  const term=$("orderSearch").value.trim().toLowerCase();
+  const visible=currentOrders.filter(order=>{
+    const docs=getDocuments(order);
+    const search=[order.id,order.customer_name,order.customer_email,order.customer_phone,
+      ...docs.map(documentName)].map(v=>String(v??"")).join(" ").toLowerCase();
+    if(term&&!search.includes(term))return false;
+    const status=String(order.status||"pending").toLowerCase();
+    const pay=String(order.payment_status||"pending").toLowerCase();
+    const balance=Number(order.balance_amount_paise);
+    if(activeOrderFilter==="pending")return pay!=="paid"&&balance>0;
+    if(activeOrderFilter==="printing")return status==="printing";
+    if(activeOrderFilter==="ready")return status==="ready_for_collection";
+    return true;
+  });
+  updateSearchCount(visible.length,currentOrders.length,term);
+  $("ordersTable").replaceChildren();
+  if(!visible.length){
+    $("ordersTable").innerHTML='<tr><td colspan="10" class="empty">No orders match your search or filter.</td></tr>';return;
+  }
+
+  visible.forEach(order=>{
+    const row=document.createElement("tr");
+    const docs=getDocuments(order);
+    const balance=Number(order.balance_amount_paise);
+    const cells=[
+      '<span class="order-id">#'+escapeHtml(order.id)+'</span>',
+      '<span class="customer-name">'+escapeHtml(order.customer_name||"N/A")+'</span>'+
+        '<br><span class="muted">'+escapeHtml(order.customer_phone||"")+'</span>',
+      escapeHtml(order.created_at||"—"),
+      '<span class="document-count">'+docs.length+(docs.length===1?" PDF":" PDFs")+'</span>',
+      escapeHtml(money(order.total_amount_paise)),
+      escapeHtml(money(order.advance_amount_paise)),
+      '<span class="'+(balance===0?"success":"error")+'"><strong>'+escapeHtml(money(balance))+'</strong></span>',
+      '<span class="badge '+escapeHtml(order.payment_status||"unknown")+'">'+escapeHtml(paymentLabel(order.payment_status))+'</span>',
+      badge(order.status)
+    ];
+    cells.forEach(html=>{
+      const td=document.createElement("td");td.innerHTML=html;row.appendChild(td);
+    });
+
+    const actionCell=document.createElement("td");
+    const view=document.createElement("button");
+    view.className="btn-blue";view.textContent="View More →";
+    view.addEventListener("click",()=>viewOrderDetails(order.id));
+    actionCell.appendChild(view);
+
+    const receipt=document.createElement("button");
+    receipt.textContent="Receipt";receipt.addEventListener("click",()=>openReceipt(order));
+    actionCell.appendChild(receipt);
+
+    if(String(order.payment_status||"").toLowerCase()==="advance_paid"&&balance>0){
+      const cash=document.createElement("button");cash.className="btn-green";cash.textContent="Collect Cash";
+      cash.addEventListener("click",()=>collectCash(order,cash));actionCell.appendChild(cash);
+    }
+    row.appendChild(actionCell);$("ordersTable").appendChild(row);
+  });
+}
+
+async function collectCash(order,button) {
+  const due=Number(order.balance_amount_paise);
+  const entered=prompt("Enter cash received for order #"+order.id+
+    "\nOutstanding balance: "+money(due)+"\n\nEnter amount in rupees:",(due/100).toFixed(2));
+  if(entered===null)return;
+  if(!/^\d+(\.\d{1,2})?$/.test(entered.trim())){alert("Enter a valid amount with up to 2 decimal places.");return;}
+  const amountPaise=Math.round(Number(entered.trim())*100);
+  if(!Number.isSafeInteger(amountPaise)||amountPaise<=0||amountPaise>due){
+    alert("Enter an amount greater than zero and no more than "+money(due)+".");return;
+  }
+  if(!confirm("Record "+money(amountPaise)+" as cash received for order #"+order.id+"?"))return;
+  button.disabled=true;
+  try{
+    const response=await fetch(API_URL+"/admin/orders/"+encodeURIComponent(order.id)+"/collect-cash",{
+      method:"POST",headers:authHeaders({"Content-Type":"application/json"}),
+      body:JSON.stringify({amountPaise})
+    });
+    const data=await readResponse(response);
+    if(response.status===401||response.status===403){showLogin();showMessage($("loginMessage"),"Please sign in again.","error");return;}
+    if(!response.ok)throw new Error(data.error||data.message||"Could not record cash payment.");
+    showMessage($("dashboardMessage"),"Cash payment recorded for order #"+order.id+".","success");
+    await loadOrders();
+  }catch(error){showMessage($("dashboardMessage"),error.message,"error");}
+  finally{button.disabled=false;}
+}
+
+async function updateOrderStatus(order,newStatus,button) {
+  const current=String(order.status||"pending");
+  if(newStatus===current)return;
+  if(newStatus==="completed"&&Number(order.balance_amount_paise)>0){
+    alert("This order has an outstanding balance of "+money(order.balance_amount_paise)+
+      ". Collect the balance before completing the order.");return;
+  }
+  if(!confirm("Change order #"+order.id+" to "+statusLabel(newStatus)+"?"))return;
+  button.disabled=true;
+  try{
+    const response=await fetch(API_URL+"/admin/orders/"+encodeURIComponent(order.id)+"/status",{
+      method:"PATCH",headers:authHeaders({"Content-Type":"application/json"}),
+      body:JSON.stringify({status:newStatus})
+    });
+    const data=await readResponse(response);
+    if(response.status===401||response.status===403){showLogin();showMessage($("loginMessage"),"Please sign in again.","error");return;}
+    if(!response.ok)throw new Error(data.error||data.message||"Could not update order status.");
+    showMessage($("dashboardMessage"),"Order #"+order.id+" status updated.","success");
+    await loadOrders();
+  }catch(error){showMessage($("dashboardMessage"),error.message,"error");}
+  finally{button.disabled=false;}
+}
+
+function renderDetail(order,receipt) {
+  const docs=Array.isArray(order.documents)?order.documents:getDocuments(order);
+  const fields=[
+    ["Customer Name",order.customer_name],["Email",order.customer_email],
+    ["Phone",order.customer_phone],["Order Date",order.created_at],
+    ["Collection Method",order.collection_method],["Collection Location",order.collection_location],
+    ["College Year",order.college_year],["Department",order.college_department],
+    ["Section",order.college_section],["College Point",order.college_point],
+    ["Delivery Stop",order.delivery_stop],["Roll Number",order.roll_number],
+    ["Razorpay Order ID",order.razorpay_order_id],["Razorpay Payment ID",order.razorpay_payment_id]
+  ];
+  const settings=(doc)=>{
+    const entries=[
+      ["Pages",doc.page_count],["Copies",doc.copies],["Colour mode",doc.color_mode],
+      ["Sides",doc.print_sides],["Pages per sheet",doc.pages_per_sheet],
+      ["Paper size",doc.paper_size||order.paper_size],["Orientation",doc.orientation],
+      ["Colour pages",doc.colour_pages]
+    ];
+    return entries.filter(([,v])=>v!==null&&v!==undefined&&v!=="").map(([label,value])=>
+      '<div><div class="setting-label">'+escapeHtml(label)+'</div><div class="setting-value">'+escapeHtml(value)+'</div></div>'
+    ).join("");
+  };
+  const docCards=docs.length?docs.map((doc,index)=>{
+    const hasPdf=doc.has_pdf!==false;
+    return '<article class="doc-card"><div class="doc-head">'+
+      '<div class="pdf-icon">PDF</div><div class="doc-main"><div class="doc-name">'+
+      (index+1)+'. '+escapeHtml(documentName(doc,index))+'</div><div class="doc-sub">'+
+      escapeHtml(doc.page_count??"—")+' pages · '+escapeHtml(doc.copies??"—")+' copies</div></div>'+
+      '<div class="doc-price">'+escapeHtml(doc.amount_paise!==undefined?money(doc.amount_paise):"")+'</div></div>'+
+      '<div class="doc-settings">'+settings(doc)+'</div>'+
+      '<div class="doc-actions no-print">'+
+      (hasPdf?'<button class="btn-blue" data-download-doc="'+escapeHtml(doc.id??doc.document_id??"")+'" data-index="'+index+'">↓ Download PDF</button>':'<span class="error">PDF file unavailable</span>')+
+      '</div></article>';
+  }).join(""):'<p class="muted">No PDF documents were returned for this order.</p>';
+
+  const paymentRows=Array.isArray(receipt.payments)&&receipt.payments.length
+    ?receipt.payments.map(p=>'<tr><td>'+escapeHtml(p.payment_type)+'</td><td>'+
+      escapeHtml(p.payment_method)+'</td><td>'+escapeHtml(money(p.amount_paise))+
+      '</td><td>'+escapeHtml(p.created_at)+'</td></tr>').join("")
+    :'<tr><td colspan="4" class="empty">No recorded payment transactions.</td></tr>';
+
+  $("detailContent").innerHTML=
+    '<div class="detail-top"><div><h2>Order #'+escapeHtml(order.id)+'</h2><p>'+
+    escapeHtml(order.customer_name||"Customer")+' · '+docs.length+' PDF(s) · '+
+    escapeHtml(order.created_at||"")+'</p></div><div>'+badge(order.status)+'</div></div>'+
+    '<div class="metrics">'+
+    '<div class="metric"><span>Total Amount</span><strong>'+escapeHtml(money(order.total_amount_paise))+'</strong></div>'+
+    '<div class="metric"><span>Advance Paid</span><strong>'+escapeHtml(money(order.advance_amount_paise))+'</strong></div>'+
+    '<div class="metric"><span>Balance Due</span><strong>'+escapeHtml(money(order.balance_amount_paise))+'</strong></div>'+
+    '<div class="metric"><span>Payment Status</span><strong style="font-size:14px">'+escapeHtml(paymentLabel(order.payment_status))+'</strong></div></div>'+
+    '<div class="panel"><div class="panel-head"><h2>Documents ('+docs.length+')</h2><p>Each PDF has its own settings and downloadable file.</p></div>'+
+    '<div style="padding:0 15px 15px" class="doc-grid">'+docCards+'</div></div>'+
+    '<div class="panel"><div class="panel-head"><h2>Customer, Delivery &amp; Collection</h2></div>'+
+    '<div style="padding:0 15px 15px" class="detail-grid">'+
+    fields.map(([label,value])=>'<div class="detail-field"><span>'+escapeHtml(label)+'</span><strong>'+escapeHtml(value)+'</strong></div>').join("")+
+    '</div></div>'+
+    '<div class="panel"><div class="panel-head"><h2>Payment History</h2><p>Recorded online and cash transactions</p></div>'+
+    '<div class="table-wrap"><table class="history-table"><thead><tr><th>Type</th><th>Method</th><th>Amount</th><th>Date</th></tr></thead><tbody>'+
+    paymentRows+'</tbody></table></div></div>'+
+    '<div class="panel"><div class="panel-head"><h2>Order Management</h2><p>Changes are saved by the backend.</p></div>'+
+    '<div style="padding:0 15px 15px" class="actions no-print">'+
+    '<button id="detailReceiptButton">Print Receipt</button>'+
+    '<select id="detailStatusSelect" aria-label="Update order status">'+
+    ['pending','confirmed','printing','ready_for_collection','completed','cancelled'].map(s=>
+      '<option value="'+s+'" '+(String(order.status||"pending")===s?"selected":"")+'>'+statusLabel(s)+'</option>'
+    ).join("")+'</select><button id="detailStatusButton" class="btn-blue">Update Status</button>'+
+    (Number(order.balance_amount_paise)>0&&String(order.payment_status||"").toLowerCase()==="advance_paid"
+      ?'<button id="detailCashButton" class="btn-green">Collect Cash</button>':'')+
+    '<button id="detailPrintButton2">Print Details</button></div></div>';
+
+  $("detailReceiptButton").addEventListener("click",()=>openReceipt(order,receipt));
+  $("detailPrintButton2").addEventListener("click",()=>window.print());
+  $("detailStatusButton").addEventListener("click",()=>{
+    const select=$("detailStatusSelect");
+    updateOrderStatus(order,select.value,$("detailStatusButton")).then(()=>{
+      // Refresh detail data after a successful update.
+      if($("detailsSection").classList.contains("hidden")===false)viewOrderDetails(order.id,true);
+    });
+  });
+  const cash=$("detailCashButton");
+  if(cash)cash.addEventListener("click",()=>collectCash(order,cash));
+
+  $("detailContent").querySelectorAll("[data-download-doc]").forEach(button=>{
+    button.addEventListener("click",()=>downloadDocument(order,button));
+  });
+}
+
+async function viewOrderDetails(orderId,quiet=false) {
+  if(!adminToken){showLogin();return;}
+  if(!quiet)showMessage($("dashboardMessage"),"Loading order details...");
+  try{
+    const response=await fetch(API_URL+"/admin/orders/"+encodeURIComponent(orderId)+"/details",{headers:authHeaders()});
+    const data=await readResponse(response);
+    if(response.status===401||response.status===403){showLogin();showMessage($("loginMessage"),"Please sign in again.","error");return;}
+    if(!response.ok||!data.order)throw new Error(data.error||data.message||"Could not load order details.");
+    currentDetailOrder=data.order;
+    currentDetailReceipt=data.receipt||{};
+    showDetails();
+    renderDetail(currentDetailOrder,currentDetailReceipt);
+  }catch(error){
+    showDashboard();
+    showMessage($("dashboardMessage"),error.message||"Could not load details.","error");
+  }
+}
+
+async function downloadDocument(order,button) {
+  const documentId=button.dataset.downloadDoc;
+  if(!documentId){
+    alert("This document has no ID in the backend response. A document ID is required for secure individual downloads.");
+    return;
+  }
+  button.disabled=true;
+  try{
+    const url=API_URL+"/admin/orders/"+encodeURIComponent(order.id)+
+      "/documents/"+encodeURIComponent(documentId)+"/pdf";
+    const response=await fetch(url,{headers:authHeaders()});
+    if(response.status===401||response.status===403){showLogin();alert("Your admin session expired. Sign in again.");return;}
+    if(!response.ok){
+      const data=await readResponse(response);
+      throw new Error(data.error||data.message||"Individual PDF download route is not available yet.");
+    }
+    const blob=await response.blob();
+    const objectUrl=URL.createObjectURL(blob);
+    const link=document.createElement("a");
+    link.href=objectUrl;
+    link.download=documentName(getDocuments(order)[Number(button.dataset.index)]||{} ,Number(button.dataset.index));
+    document.body.appendChild(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(objectUrl),2000);
+  }catch(error){alert(error.message||"Could not download PDF.");}
+  finally{button.disabled=false;}
+}
+
+async function openReceipt(order,receipt={}) {
+  try{
+    const response=await fetch(API_URL+"/admin/orders/"+encodeURIComponent(order.id)+"/details",{headers:authHeaders()});
+    const data=await readResponse(response);
+    if(response.ok&&data.order){order=data.order;receipt=data.receipt||receipt;}
+  }catch(_){}
+  const docs=getDocuments(order);
+  const payments=Array.isArray(receipt.payments)?receipt.payments:[];
+  const win=window.open("","_blank");
+  if(!win){alert("Allow pop-ups to print the receipt.");return;}
+  const docRows=docs.map((d,i)=>'<tr><td>'+escapeHtml(documentName(d,i))+
+    '</td><td>'+escapeHtml(d.page_count)+'</td><td>'+escapeHtml(d.copies)+'</td></tr>').join("");
+  const paymentRows=payments.map(p=>'<tr><td>'+escapeHtml(p.payment_type)+
+    '</td><td>'+escapeHtml(p.payment_method)+'</td><td>'+escapeHtml(money(p.amount_paise))+
+    '</td><td>'+escapeHtml(p.created_at)+'</td></tr>').join("");
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>GoPrint Receipt</title>'+
+    '<style>body{font:14px Arial;max-width:850px;margin:25px auto;padding:15px;color:#182b49}h1{color:#2563eb}table{width:100%;border-collapse:collapse;margin:12px 0 24px}td,th{padding:9px;border:1px solid #dce7f3;text-align:left;overflow-wrap:anywhere}th{background:#edf5ff}button{padding:9px 14px;background:#e5efff;color:#245b9f;border:1px solid #cfe0f5;border-radius:7px}@media print{.no-print{display:none}}</style></head><body>'+
+    '<div class="no-print"><button onclick="window.print()">Print / Save Receipt as PDF</button></div>'+
+    '<h1>GoPrint</h1><p>Payment Receipt</p><p>Order ID: '+escapeHtml(order.id)+'</p>'+
+    '<h2>Customer</h2><p>'+escapeHtml(order.customer_name)+' · '+escapeHtml(order.customer_phone)+'</p>'+
+    '<h2>Documents</h2><table><tr><th>PDF</th><th>Pages</th><th>Copies</th></tr>'+docRows+'</table>'+
+    '<h2>Payment History</h2><table><tr><th>Type</th><th>Method</th><th>Amount</th><th>Date</th></tr>'+paymentRows+'</table>'+
+    '<h2>Payment Summary</h2><table><tr><th>Total</th><td>'+escapeHtml(money(order.total_amount_paise))+
+    '</td></tr><tr><th>Advance</th><td>'+escapeHtml(money(order.advance_amount_paise))+
+    '</td></tr><tr><th>Paid</th><td>'+escapeHtml(money(receipt.total_paid_paise))+
+    '</td></tr><tr><th>Balance</th><td>'+escapeHtml(money(order.balance_amount_paise))+
+    '</td></tr><tr><th>Status</th><td>'+escapeHtml(paymentLabel(order.payment_status))+'</td></tr></table>'+
+    '<p>Thank you for choosing GoPrint.</p></body></html>');
+  win.document.close();
+}
+
+$("refreshButton").addEventListener("click",loadOrders);
+$("logoutButton").addEventListener("click",()=>{showLogin();showMessage($("loginMessage"),"You have logged out.","success");});
+$("navLogout").addEventListener("click",()=>{showLogin();});
+$("backButton").addEventListener("click",showDashboard);
+$("detailPrintButton").addEventListener("click",()=>window.print());
+$("navDashboard").addEventListener("click",showDashboard);
+$("navOrders").addEventListener("click",showDashboard);
+["navSettings","navUsers","navReports"].forEach(id=>{
+  $(id).addEventListener("click",()=>alert("This section is not connected to a backend feature yet."));
+});
+$("orderSearch").addEventListener("input",()=>{
+  clearTimeout(searchTimeout);searchTimeout=setTimeout(renderOrders,200);
+});
+$("clearSearchButton").addEventListener("click",()=>{$("orderSearch").value="";renderOrders();});
+document.querySelectorAll(".stat[data-filter]").forEach(card=>{
+  const activate=()=>{
+    activeOrderFilter=card.dataset.filter;
+    document.querySelectorAll(".stat[data-filter]").forEach(item=>item.classList.toggle("active",item===card));
+    renderOrders();
+  };
+  card.addEventListener("click",activate);
+  card.addEventListener("keydown",event=>{
+    if(event.key==="Enter"||event.key===" "){event.preventDefault();activate();}
+  });
+});
+
+if(adminToken){showDashboard();loadOrders();}
+else showLogin();
+</script>
+</body>
+</html>
